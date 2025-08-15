@@ -5,65 +5,266 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CodeXaurA Chat</title>
   <style>
+    :root {
+      --bg-primary: #121212;
+      --bg-secondary: #1e1e1e;
+      --text-primary: #ffffff;
+      --text-secondary: #b3b3b3;
+      --accent: #00ffcc;
+      --accent-hover: #00ccaa;
+      --border: #333333;
+      --shadow: rgba(0, 0, 0, 0.5);
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg-primary: #ffffff;
+        --bg-secondary: #f0f0f0;
+        --text-primary: #000000;
+        --text-secondary: #666666;
+        --accent: #00ffcc;
+        --accent-hover: #00ccaa;
+        --border: #dddddd;
+        --shadow: rgba(0, 0, 0, 0.1);
+      }
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      max-width: 600px;
-      margin: auto;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      width: 100%;
+    }
+
+    .sidebar {
+      width: 0;
+      padding: 0;
+      overflow: hidden;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      transition: width 0.3s ease, padding 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      z-index: 10;
+    }
+
+    .sidebar.open {
+      width: 250px;
       padding: 20px;
-      background: #121212;
-      color: #fff;
     }
-    h1 {
-      text-align: center;
-      color: #00ffcc;
-    }
-    textarea, button {
+
+    .sidebar button {
       width: 100%;
       padding: 10px;
-      margin: 5px 0;
-      font-size: 16px;
-      border-radius: 5px;
+      margin-bottom: 20px;
+      background: var(--accent);
+      color: var(--bg-primary);
       border: none;
-    }
-    textarea {
-      resize: vertical;
-      min-height: 80px;
-      background: #1e1e1e;
-      color: white;
-    }
-    button {
-      background: #00ffcc;
-      color: black;
+      border-radius: 5px;
       font-weight: bold;
       cursor: pointer;
+      transition: background 0.2s;
     }
-    button:hover {
-      background: #00ccaa;
+
+    .sidebar button:hover {
+      background: var(--accent-hover);
     }
-    .response {
-      background: #1e1e1e;
-      padding: 15px;
-      border-radius: 5px;
-      margin-top: 10px;
+
+    .sidebar h3 {
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+    }
+
+    .settings-icon {
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--text-primary);
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      padding: 20px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+
+    .header h1 {
+      margin: 0;
+      color: var(--accent);
+      font-size: 24px;
+    }
+
+    .menu-toggle {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--text-primary);
+    }
+
+    #chat {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .message {
+      max-width: 70%;
+      padding: 12px 18px;
+      border-radius: 20px;
       white-space: pre-wrap;
+      word-wrap: break-word;
+      box-shadow: 0 2px 4px var(--shadow);
+    }
+
+    .user {
+      align-self: flex-end;
+      background: var(--accent);
+      color: var(--bg-primary);
+    }
+
+    .ai {
+      align-self: flex-start;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+
+    .input-area {
+      display: flex;
+      padding: 20px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-primary);
+    }
+
+    textarea {
+      flex: 1;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid var(--border);
+      border-radius: 20px 0 0 20px;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      resize: none;
+      min-height: 20px;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .input-area button {
+      padding: 12px 20px;
+      background: var(--accent);
+      color: var(--bg-primary);
+      border: none;
+      border-radius: 0 20px 20px 0;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .input-area button:hover {
+      background: var(--accent-hover);
+    }
+
+    #overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 5;
+    }
+
+    @media (prefers-color-scheme: light) {
+      #overlay {
+        background: rgba(255, 255, 255, 0.5);
+      }
     }
   </style>
 </head>
 <body>
-
-  <h1>💻 CodeXaurA AI Chat</h1>
-
-  <textarea id="userInput" placeholder="Type your message..."></textarea>
-  <button onclick="sendMessage()">Send</button>
-
-  <div id="response" class="response"></div>
-
+  <div class="container">
+    <div class="sidebar">
+      <button onclick="location.reload()">New chat</button>
+      <h3>Recent</h3>
+      <ul id="recent"></ul>
+      <div class="sidebar-footer">
+        <div class="settings-icon" onclick="goToSettings()">⚙️</div>
+      </div>
+    </div>
+    <div class="main">
+      <div class="header">
+        <div class="menu-toggle" onclick="toggleSidebar()">☰</div>
+        <h1>💻 CodeXaurA AI Chat</h1>
+      </div>
+      <div id="chat"></div>
+      <div class="input-area">
+        <textarea id="userInput" placeholder="Type your message..."></textarea>
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+  <div id="overlay" onclick="toggleSidebar()"></div>
   <script>
-    async function sendMessage() {
-      const message = document.getElementById('userInput').value.trim();
-      if (!message) return alert("Please enter a message.");
+    const chat = document.getElementById('chat');
+    const userInput = document.getElementById('userInput');
 
-      document.getElementById('response').innerText = "Thinking...";
+    userInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    async function sendMessage() {
+      const message = userInput.value.trim();
+      if (!message) return;
+
+      const userDiv = document.createElement('div');
+      userDiv.classList.add('message', 'user');
+      userDiv.innerText = message;
+      chat.appendChild(userDiv);
+      scrollToBottom();
+
+      userInput.value = '';
+      userInput.style.height = 'auto';
+
+      const aiDiv = document.createElement('div');
+      aiDiv.classList.add('message', 'ai');
+      aiDiv.innerText = 'Thinking...';
+      chat.appendChild(aiDiv);
+      scrollToBottom();
 
       try {
         const res = await fetch("https://ai-coder-backend.onrender.com/chat", {
@@ -71,18 +272,32 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ message })
         });
-
         const data = await res.json();
-        if (data.reply) {
-          document.getElementById('response').innerText = data.reply;
-        } else {
-          document.getElementById('response').innerText = "Error: " + JSON.stringify(data);
-        }
+        aiDiv.innerText = data.reply || 'Error: ' + JSON.stringify(data);
       } catch (err) {
-        document.getElementById('response').innerText = "Request failed: " + err.message;
+        aiDiv.innerText = 'Request failed: ' + err.message;
+      }
+      scrollToBottom();
+    }
+
+    function scrollToBottom() {
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.getElementById('overlay');
+      sidebar.classList.toggle('open');
+      if (sidebar.classList.contains('open')) {
+        overlay.style.display = 'block';
+      } else {
+        overlay.style.display = 'none';
       }
     }
-  </script>
 
+    function goToSettings() {
+      window.location.href = 'settings.html';
+    }
+  </script>
 </body>
 </html>

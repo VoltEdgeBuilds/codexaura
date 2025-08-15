@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeXaurA Chat</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+      background: #121212;
+      color: #fff;
+    }
+    h1 {
+      text-align: center;
+      color: #00ffcc;
+    }
+    textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0;
+      font-size: 16px;
+      border-radius: 5px;
+      border: none;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+      background: #1e1e1e;
+      color: white;
+    }
+    button {
+      background: #00ffcc;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #00ccaa;
+    }
+    .response {
+      background: #1e1e1e;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 10px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>💻 CodeXaurA AI Chat</h1>
+
+  <textarea id="userInput" placeholder="Type your message..."></textarea>
+  <button onclick="sendMessage()">Send</button>
+
+  <div id="response" class="response"></div>
+
+  <script>
+    async function sendMessage() {
+      const message = document.getElementById('userInput').value.trim();
+      if (!message) return alert("Please enter a message.");
+
+      document.getElementById('response').innerText = "Thinking...";
+
+      try {
+        const res = await fetch("https://ai-coder-backend.onrender.com/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message })
+        });
+
+        const data = await res.json();
+        if (data.reply) {
+          document.getElementById('response').innerText = data.reply;
+        } else {
+          document.getElementById('response').innerText = "Error: " + JSON.stringify(data);
+        }
+      } catch (err) {
+        document.getElementById('response').innerText = "Request failed: " + err.message;
+      }
+    }
+  </script>
+
+</body>
+</html>

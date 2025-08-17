@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Choose Your Plan - CodexAura</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #f1f5f9;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 900px;
+      padding: 40px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #38bdf8;
+    }
+
+    .plans {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 50px;
+    }
+
+    .plan {
+      flex: 1 1 300px;
+      background: #1e293b;
+      border-radius: 10px;
+      padding: 25px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    .plan h2 {
+      margin: 0 0 10px;
+      color: #facc15;
+    }
+
+    .price {
+      font-size: 28px;
+      font-weight: bold;
+      margin: 10px 0 20px;
+    }
+
+    .plan button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 6px;
+      background: #38bdf8;
+      color: #0f172a;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .plan button:hover {
+      background: #0ea5e9;
+    }
+
+    .comparison {
+      margin-top: 30px;
+      border-collapse: collapse;
+      width: 100%;
+      background: #1e293b;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .comparison th, .comparison td {
+      padding: 15px;
+      border: 1px solid #334155;
+      text-align: center;
+    }
+
+    .comparison th {
+      background: #0f172a;
+      color: #38bdf8;
+    }
+
+    .comparison td {
+      color: #f1f5f9;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Choose Your CodexAura Plan</h1>
+
+    <div class="plans">
+      <!-- Free Plan -->
+      <div class="plan">
+        <h2>Normal</h2>
+        <p class="price">₹0 / month</p>
+        <p>For casual coding use</p>
+        <button onclick="continueFree()">Continue</button>
+      </div>
+
+      <!-- Plus Plan -->
+      <div class="plan">
+        <h2>Plus</h2>
+        <p class="price">₹1250 / month</p>
+        <p>For power coders & unlimited AI</p>
+        <button onclick="goToPayment()">Upgrade</button>
+      </div>
+    </div>
+
+    <!-- Comparison Table -->
+    <table class="comparison">
+      <tr>
+        <th>Feature</th>
+        <th>Normal</th>
+        <th>Plus</th>
+      </tr>
+      <tr>
+        <td>Price</td>
+        <td>₹0</td>
+        <td>₹1250</td>
+      </tr>
+      <tr>
+        <td>Model</td>
+        <td>Qwen-2.5 (Basic)</td>
+        <td>Best AI Models for Coding</td>
+      </tr>
+      <tr>
+        <td>Credits</td>
+        <td>Limited</td>
+        <td>Unlimited</td>
+      </tr>
+      <tr>
+        <td>Support</td>
+        <td>Community</td>
+        <td>Priority</td>
+      </tr>
+    </table>
+  </div>
+
+  <script>
+    function continueFree() {
+      window.location.href = "index.html"; // go back to app
+    }
+
+    function goToPayment() {
+      window.location.href = "payment.html"; // go to payment page
+    }
+  </script>
+</body>
+</html>

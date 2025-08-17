@@ -292,12 +292,23 @@
     const password = document.getElementById("password").value;
     if (!email || !password){ alert("Enter email & password"); return; }
 
+    // try sign in first
     const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
+
     if (signInErr){
-      const { error: signUpErr } = await supabase.auth.signUp({ email, password });
+      // fallback → sign up
+      const { error: signUpErr } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: "https://voltedgebuilds.github.io/codexaura"
+        }
+      });
       if (signUpErr){ alert(signUpErr.message); return; }
     }
-    await checkSession();
+
+    // ✅ Always redirect to your app root after login/signup
+    window.location.href = "https://voltedgebuilds.github.io/codexaura";
   }
 
   async function googleLogin(){

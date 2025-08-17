@@ -17,8 +17,9 @@
     }
 
     .container {
-      max-width: 900px;
-      padding: 40px;
+      max-width: 1000px;
+      padding: 40px 20px;
+      width: 100%;
     }
 
     h1 {
@@ -32,27 +33,52 @@
       gap: 20px;
       justify-content: center;
       flex-wrap: wrap;
-      margin-bottom: 50px;
     }
 
     .plan {
       flex: 1 1 300px;
       background: #1e293b;
-      border-radius: 10px;
+      border-radius: 12px;
       padding: 25px;
       text-align: center;
       box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
 
     .plan h2 {
       margin: 0 0 10px;
       color: #facc15;
+      font-size: 22px;
     }
 
     .price {
-      font-size: 28px;
+      font-size: 26px;
       font-weight: bold;
-      margin: 10px 0 20px;
+      margin: 10px 0 15px;
+    }
+
+    .features {
+      list-style: none;
+      padding: 0;
+      margin: 20px 0;
+      text-align: left;
+      font-size: 15px;
+    }
+
+    .features li {
+      margin: 8px 0;
+      padding-left: 20px;
+      position: relative;
+    }
+
+    .features li::before {
+      content: "✔";
+      position: absolute;
+      left: 0;
+      color: #38bdf8;
+      font-weight: bold;
     }
 
     .plan button {
@@ -65,34 +91,18 @@
       font-weight: bold;
       cursor: pointer;
       transition: background 0.2s;
+      margin-top: auto;
     }
 
     .plan button:hover {
       background: #0ea5e9;
     }
 
-    .comparison {
-      margin-top: 30px;
-      border-collapse: collapse;
-      width: 100%;
-      background: #1e293b;
-      border-radius: 8px;
-      overflow: hidden;
-    }
-
-    .comparison th, .comparison td {
-      padding: 15px;
-      border: 1px solid #334155;
-      text-align: center;
-    }
-
-    .comparison th {
-      background: #0f172a;
-      color: #38bdf8;
-    }
-
-    .comparison td {
-      color: #f1f5f9;
+    @media (max-width: 768px) {
+      .plans {
+        flex-direction: column;
+        align-items: center;
+      }
     }
   </style>
 </head>
@@ -105,7 +115,12 @@
       <div class="plan">
         <h2>Normal</h2>
         <p class="price">₹0 / month</p>
-        <p>For casual coding use</p>
+        <ul class="features">
+          <li>Qwen-2.5 (Basic Model)</li>
+          <li>Limited Credits</li>
+          <li>Community Support</li>
+          <li>Good for casual coding</li>
+        </ul>
         <button onclick="continueFree()">Continue</button>
       </div>
 
@@ -113,39 +128,15 @@
       <div class="plan">
         <h2>Plus</h2>
         <p class="price">₹1250 / month</p>
-        <p>For power coders & unlimited AI</p>
+        <ul class="features">
+          <li>Best AI Models for Coding</li>
+          <li>Unlimited Credits</li>
+          <li>Priority Support</li>
+          <li>Perfect for developers</li>
+        </ul>
         <button onclick="goToPayment()">Upgrade</button>
       </div>
     </div>
-
-    <!-- Comparison Table -->
-    <table class="comparison">
-      <tr>
-        <th>Feature</th>
-        <th>Normal</th>
-        <th>Plus</th>
-      </tr>
-      <tr>
-        <td>Price</td>
-        <td>₹0</td>
-        <td>₹1250</td>
-      </tr>
-      <tr>
-        <td>Model</td>
-        <td>Qwen-2.5 (Basic)</td>
-        <td>Best AI Models for Coding</td>
-      </tr>
-      <tr>
-        <td>Credits</td>
-        <td>Limited</td>
-        <td>Unlimited</td>
-      </tr>
-      <tr>
-        <td>Support</td>
-        <td>Community</td>
-        <td>Priority</td>
-      </tr>
-    </table>
   </div>
 
   <script>

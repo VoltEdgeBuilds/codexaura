@@ -1,313 +1,484 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CodeXaurA Chat</title>
-  
-    <meta name="description" content="Engage in a live chat with CodeXaurA, an AI Buddy designed for coding, programming, and general knowledge queries. Get instant, accurate responses for all your development and learning needs.">
-    <meta name="keywords" content="CodeXaurA, AI chat, coding AI, programming assistant, web development, AI bot, chatbot, code help, artificial intelligence">
-    <meta name="author" content="CodeXaurA">
-    <meta property="og:title" content="CodeXaurA Chat - Your AI Coding Buddy">
-    <meta property="og:description" content="Engage in a live chat with CodeXaurA, an AI assistant designed for coding, programming, and general knowledge queries. Get instant, accurate responses for all your development and learning needs.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://www.codexaura.com/chat">   
-    <meta property="og:image" content="https://codexaura.github.io/img/codexaura-logo.png">   
-    <link rel="canonical" href="https://www.codexaura.com/chat">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CodeXaurA Chat</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
-    :root {
-      --bg-primary: #121212;
-      --bg-secondary: #1e1e1e;
-      --text-primary: #ffffff;
-      --text-secondary: #b3b3b3;
-      --accent: #00ffcc;
-      --accent-hover: #00ccaa;
-      --border: #333333;
-      --shadow: rgba(0, 0, 0, 0.5);
+    :root{
+      --bg-primary:#0e0f12;
+      --bg-secondary:#16181d;
+      --text-primary:#eaeaea;
+      --text-secondary:#9aa4af;
+      --accent:#00ffc8;
+      --accent-hover:#00d7aa;
+      --border:#262b33;
+      --shadow:rgba(0,0,0,.45);
+      --danger:#ff4d4f;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:linear-gradient(180deg,#0c0d10, #0e1015 35%, #0b0c10 100%);
+      color:var(--text-primary);
+      overflow:hidden;
     }
 
-    @media (prefers-color-scheme: light) {
-      :root {
-        --bg-primary: #ffffff;
-        --bg-secondary: #f0f0f0;
-        --text-primary: #000000;
-        --text-secondary: #666666;
-        --accent: #00ffcc;
-        --accent-hover: #00ccaa;
-        --border: #dddddd;
-        --shadow: rgba(0, 0, 0, 0.1);
-      }
+    .container{display:flex;height:100%}
+
+    /* Sidebar */
+    .sidebar{
+      width:0;
+      background:var(--bg-secondary);
+      border-right:1px solid var(--border);
+      transition:width .25s ease;
+      overflow:hidden;
+      display:flex;flex-direction:column;
+      min-width:0;
+      z-index:10;
+    }
+    .sidebar.open{width:280px}
+    .sidebar .top{
+      padding:16px;
+      border-bottom:1px solid var(--border);
+    }
+    .sidebar .top button{
+      width:100%;
+      padding:10px 12px;
+      background:var(--accent);
+      color:#041013;
+      border:none;border-radius:10px;
+      font-weight:700;cursor:pointer;
+    }
+    .sidebar .top button:hover{background:var(--accent-hover)}
+    .sidebar h3{
+      margin:12px 16px 6px;
+      color:var(--text-secondary);
+      font-size:12px;letter-spacing:.12em;
+      text-transform:uppercase;
+    }
+    #chatList{
+      list-style:none;margin:0;padding:0 8px 16px;
+      overflow:auto;flex:1;
+    }
+    #chatList li{
+      padding:10px 12px;margin:6px 8px;border:1px solid var(--border);
+      border-radius:10px;cursor:pointer;
+      transition:background .15s ease,border-color .2s ease;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    }
+    #chatList li:hover{background:#1e222b;border-color:#2f3641}
+    .sidebar-footer{
+      border-top:1px solid var(--border);
+      padding:14px 16px;
+      display:flex;align-items:center;gap:10px;
+      cursor:pointer;
+    }
+    .sidebar-footer:hover{background:#1c2027}
+
+    /* Main */
+    .main{flex:1;display:flex;flex-direction:column;min-width:0}
+    .header{
+      height:60px;display:flex;align-items:center;gap:10px;
+      padding:0 14px;border-bottom:1px solid var(--border);
+      background:rgba(15,17,22,.6);backdrop-filter:blur(6px);
+    }
+    .menu-btn{
+      display:none;font-size:22px;line-height:1;cursor:pointer;
+      padding:8px 10px;border-radius:8px;border:1px solid var(--border);
+      background:#12151a;
+    }
+    .menu-btn:active{transform:scale(.98)}
+    .brand{flex:1;text-align:center;font-weight:800;letter-spacing:.02em}
+    .brand span{color:var(--accent)}
+    .user-actions{display:flex;align-items:center;gap:10px}
+    .user-actions button{
+      background:var(--accent);color:#041013;border:none;border-radius:10px;
+      padding:8px 12px;font-weight:800;cursor:pointer;
+    }
+    .user-actions button:hover{background:var(--accent-hover)}
+    .user-avatar{width:28px;height:28px;border-radius:50%;border:1px solid var(--border)}
+    .ghost-btn{
+      background:#151922;border:1px solid var(--border);color:var(--text-primary)
+    }
+    .ghost-btn:hover{border-color:#394354}
+
+    /* Chat */
+    #chat{
+      flex:1;overflow:auto;padding:18px 18px 24px;
+      display:flex;flex-direction:column;gap:14px;
+    }
+    .message{
+      max-width:min(82%,720px);
+      padding:12px 14px;border-radius:16px;
+      box-shadow:0 2px 6px var(--shadow);
+      line-height:1.5;word-wrap:break-word;white-space:pre-wrap;
+    }
+    .message.user{
+      align-self:flex-end;background:var(--accent);color:#041013;
+    }
+    .message.ai{
+      align-self:flex-start;background:#151922;border:1px solid var(--border);
     }
 
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      display: flex;
-      height: 100vh;
-      overflow: hidden;
+    .input-area{
+      border-top:1px solid var(--border);
+      padding:10px;display:flex;gap:8px;background:#0e1015;
+    }
+    textarea{
+      flex:1;border:1px solid var(--border);border-radius:12px;
+      background:#12151a;color:var(--text-primary);
+      padding:12px 14px;font-size:15px;resize:none;min-height:22px;max-height:160px;overflow:auto;
+    }
+    .send-btn{
+      padding:12px 16px;border:none;border-radius:12px;
+      background:var(--accent);color:#041013;font-weight:900;cursor:pointer;
+    }
+    .send-btn:hover{background:var(--accent-hover)}
+
+    /* Overlay for sidebar on mobile */
+    #overlay{
+      position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:6;
     }
 
-    .container {
-      display: flex;
-      width: 100%;
+    /* Auth Popup */
+    #authPopup{
+      position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+      background:rgba(0,0,0,.6);z-index:20;
     }
-
-    .sidebar {
-      width: 0;
-      padding: 0;
-      overflow: hidden;
-      background: var(--bg-secondary);
-      border-right: 1px solid var(--border);
-      transition: width 0.3s ease, padding 0.3s ease;
-      display: flex;
-      flex-direction: column;
-      z-index: 10;
+    .popup-content{
+      width:320px;background:#12151a;border:1px solid var(--border);border-radius:14px;
+      box-shadow:0 12px 40px rgba(0,0,0,.6);
+      padding:18px 16px 16px;position:relative;
+      animation:pop .15s ease;
     }
-
-    .sidebar.open {
-      width: 250px;
-      padding: 20px;
+    @keyframes pop{from{transform:scale(.98);opacity:.7}to{transform:scale(1);opacity:1}}
+    .popup-title{margin:8px 0 12px;text-align:center;font-weight:800;color:var(--accent)}
+    .close-btn{
+      position:absolute;top:8px;right:8px;border:none;background:transparent;
+      color:var(--text-secondary);font-size:14px;padding:2px 6px;border-radius:6px;cursor:pointer;
     }
-
-    .sidebar button {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 20px;
-      background: var(--accent);
-      color: var(--bg-primary);
-      border: none;
-      border-radius: 5px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.2s;
+    .auth-row{display:flex;flex-direction:column;gap:8px}
+    .auth-input{
+      width:100%;padding:11px 12px;border:1px solid var(--border);
+      border-radius:10px;background:#0f131a;color:var(--text-primary)
     }
-
-    .sidebar button:hover {
-      background: var(--accent-hover);
+    .action-btn{
+      width:100%;padding:11px 12px;border:none;border-radius:10px;
+      background:var(--accent);color:#041013;font-weight:900;cursor:pointer;margin-top:6px;
     }
-
-    .sidebar h3 {
-      color: var(--text-secondary);
-      font-size: 14px;
-      margin-bottom: 10px;
+    #googleBtn{
+      width:100%;padding:10px 12px;border:1px solid #e6e6e6;border-radius:10px;
+      background:#fff;color:#111;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;
     }
+    #googleBtn img{width:18px;height:18px}
 
-    .sidebar ul {
-      list-style: none;
-      padding: 0;
-    }
-
-    .sidebar-footer {
-      margin-top: auto;
-    }
-
-    .settings-icon {
-      font-size: 24px;
-      cursor: pointer;
-      color: var(--text-primary);
-    }
-
-    .main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .header {
-      padding: 20px;
-      text-align: center;
-      border-bottom: 1px solid var(--border);
-      position: relative;
-    }
-
-    .header h1 {
-      margin: 0;
-      color: var(--accent);
-      font-size: 24px;
-    }
-
-    .menu-toggle {
-      position: absolute;
-      left: 20px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 24px;
-      cursor: pointer;
-      color: var(--text-primary);
-    }
-
-    #chat {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-
-    .message {
-      max-width: 70%;
-      padding: 12px 18px;
-      border-radius: 20px;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      box-shadow: 0 2px 4px var(--shadow);
-    }
-
-    .user {
-      align-self: flex-end;
-      background: var(--accent);
-      color: var(--bg-primary);
-    }
-
-    .ai {
-      align-self: flex-start;
-      background: var(--bg-secondary);
-      color: var(--text-primary);
-    }
-
-    .input-area {
-      display: flex;
-      padding: 20px;
-      border-top: 1px solid var(--border);
-      background: var(--bg-primary);
-    }
-
-    textarea {
-      flex: 1;
-      padding: 12px;
-      font-size: 16px;
-      border: 1px solid var(--border);
-      border-radius: 20px 0 0 20px;
-      background: var(--bg-secondary);
-      color: var(--text-primary);
-      resize: none;
-      min-height: 20px;
-      max-height: 150px;
-      overflow-y: auto;
-    }
-
-    .input-area button {
-      padding: 12px 20px;
-      background: var(--accent);
-      color: var(--bg-primary);
-      border: none;
-      border-radius: 0 20px 20px 0;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .input-area button:hover {
-      background: var(--accent-hover);
-    }
-
-    #overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 5;
-    }
-
-    @media (prefers-color-scheme: light) {
-      #overlay {
-        background: rgba(255, 255, 255, 0.5);
-      }
+    @media (max-width: 820px){
+      .menu-btn{display:inline-block}
+      .brand{font-size:16px}
+      .sidebar.open{width:min(88vw,300px)}
+      .message{max-width:92%}
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="sidebar">
-      <button onclick="location.reload()">New chat</button>
-      <h3>Recent</h3>
-      <ul id="recent"></ul>
-      <div class="sidebar-footer">
-        <div class="settings-icon" onclick="goToSettings()">⚙️</div>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="top">
+        <button onclick="newChat()">+ New Chat</button>
       </div>
-    </div>
-    <div class="main">
-      <div class="header">
-        <div class="menu-toggle" onclick="toggleSidebar()">☰</div>
-        <h1>CodeXaurA - AI</h1>
+      <h3>Your Chats</h3>
+      <ul id="chatList"></ul>
+      <div class="sidebar-footer" onclick="goToSettings()">
+        <span>⚙️</span><span>Settings</span>
       </div>
-      <div id="chat"></div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <header class="header">
+        <button id="menuBtn" class="menu-btn" onclick="toggleSidebar()">☰</button>
+        <div class="brand">Code<span>XaurA</span> — AI</div>
+        <div class="user-actions" id="userArea">
+          <!-- default: guest -->
+          <button class="ghost-btn" onclick="openAuthPopup()">Login | Signup</button>
+        </div>
+      </header>
+
+      <section id="chat"></section>
+
       <div class="input-area">
         <textarea id="userInput" placeholder="Type your message..."></textarea>
-        <button onclick="sendMessage()">Send</button>
+        <button class="send-btn" onclick="sendMessage()">Send</button>
+      </div>
+    </main>
+  </div>
+
+  <div id="overlay" onclick="toggleSidebar()"></div>
+
+  <!-- Auth Popup -->
+  <div id="authPopup">
+    <div class="popup-content">
+      <button class="close-btn" onclick="skipAuth()">✖</button>
+      <div class="popup-title">Login / Signup</div>
+      <div class="auth-row">
+        <input type="email" id="email" class="auth-input" placeholder="Email">
+        <input type="password" id="password" class="auth-input" placeholder="Password">
+        <button class="action-btn" onclick="loginOrSignup()">Continue</button>
+        <button id="googleBtn" onclick="googleLogin()">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G"> Continue with Google
+        </button>
       </div>
     </div>
   </div>
-  <div id="overlay" onclick="toggleSidebar()"></div>
-  <script>
-    const chat = document.getElementById('chat');
-    const userInput = document.getElementById('userInput');
 
-    userInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
+<script>
+  /************ CONFIG ************/
+  const supabase = window.supabase.createClient(
+    "https://tfmwzeiznhfbjbhfchiu.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRmbXd6ZWl6bmhmYmpiaGZjaGl1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUzNjQyOTUsImV4cCI6MjA3MDk0MDI5NX0.cuYHdMjqkSMIn31oClhDh1_BhBfTXLKKX_KHqQI-3nU"
+  );
+
+  /************ ELEMENTS ************/
+  const chatEl = document.getElementById("chat");
+  const userInput = document.getElementById("userInput");
+  const authPopup = document.getElementById("authPopup");
+  const userArea = document.getElementById("userArea");
+  const menuBtn = document.getElementById("menuBtn");
+  const sidebar = document.getElementById("sidebar");
+  const chatListEl = document.getElementById("chatList");
+  const overlay = document.getElementById("overlay");
+
+  /************ STATE ************/
+  let currentUser = null;
+  let currentChatId = null;
+
+  /************ HELPERS ************/
+  function openAuthPopup(){ authPopup.style.display="flex"; }
+  function skipAuth(){
+    authPopup.style.display="none";
+    // guest mode (no sidebar)
+    userArea.innerHTML = `<button class="ghost-btn" onclick="openAuthPopup()">Login | Signup</button>`;
+    menuBtn.style.display = "none";
+    sidebar.classList.remove("open");
+    overlay.style.display = "none";
+    currentUser = null;
+  }
+  function toggleSidebar(){
+    if (!currentUser) return; // sidebar only for logged-in users
+    const open = sidebar.classList.toggle("open");
+    overlay.style.display = open ? "block" : "none";
+  }
+  function goToSettings(){ window.location.href = "settings.html"; }
+  function scrollChatToBottom(){ chatEl.scrollTop = chatEl.scrollHeight; }
+
+  // render message bubble
+  function addMsg(role, content){
+    const d = document.createElement("div");
+    d.className = `message ${role === "user" ? "user":"ai"}`;
+    d.innerText = content;
+    chatEl.appendChild(d);
+    scrollChatToBottom();
+  }
+
+  /************ AUTH ************/
+  async function loginOrSignup(){
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    if (!email || !password){ alert("Enter email & password"); return; }
+
+    const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
+    if (signInErr){
+      const { error: signUpErr } = await supabase.auth.signUp({ email, password });
+      if (signUpErr){ alert(signUpErr.message); return; }
+    }
+    await checkSession();
+  }
+
+  async function googleLogin(){
+    const { error } = await supabase.auth.signInWithOAuth({ provider: "google" });
+    if (error) alert(error.message);
+  }
+
+  async function checkSession(){
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (session?.user){
+      currentUser = session.user;
+
+      // get is_upgraded
+      const { data: userRow } = await supabase
+        .from("users")
+        .select("is_upgraded")
+        .eq("id", currentUser.id)
+        .single();
+
+      const upgraded = !!userRow?.is_upgraded;
+      const avatar = currentUser.user_metadata?.avatar_url || "https://via.placeholder.com/32";
+
+      userArea.innerHTML = `
+        <img class="user-avatar" src="${avatar}" title="${currentUser.email}">
+        ${upgraded ? "" : "<button id='upgradeBtn'>Upgrade</button>"}
+      `;
+      if (!upgraded){
+        document.getElementById("upgradeBtn").onclick = () => window.location.href = "plans.html";
       }
-    });
 
-    async function sendMessage() {
-      const message = userInput.value.trim();
-      if (!message) return;
+      authPopup.style.display = "none";
+      menuBtn.style.display = "inline-block";
 
-      const userDiv = document.createElement('div');
-      userDiv.classList.add('message', 'user');
-      userDiv.innerText = message;
-      chat.appendChild(userDiv);
-      scrollToBottom();
-
-      userInput.value = '';
-      userInput.style.height = 'auto';
-
-      const aiDiv = document.createElement('div');
-      aiDiv.classList.add('message', 'ai');
-      aiDiv.innerText = 'Thinking...';
-      chat.appendChild(aiDiv);
-      scrollToBottom();
-
-      try {
-        const res = await fetch("https://ai-coder-backend.onrender.com/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message })
-        });
-        const data = await res.json();
-        aiDiv.innerText = data.reply || 'Error: ' + JSON.stringify(data);
-      } catch (err) {
-        aiDiv.innerText = 'Request failed: ' + err.message;
-      }
-      scrollToBottom();
+      // Load chats and open the most recent one (if any)
+      await loadChats(true);
+    } else {
+      // guest
+      openAuthPopup();
+      menuBtn.style.display = "none";
+      currentUser = null;
+      currentChatId = null;
+      sidebar.classList.remove("open");
+      overlay.style.display = "none";
     }
+  }
 
-    function scrollToBottom() {
-      chat.scrollTop = chat.scrollHeight;
-    }
+  /************ CHATS (Supabase) ************/
+  async function newChat() {
+  if (!currentUser) {
+    alert("Login required to save chats");
+    return;
+  }
 
-    function toggleSidebar() {
-      const sidebar = document.querySelector('.sidebar');
-      const overlay = document.getElementById('overlay');
-      sidebar.classList.toggle('open');
-      if (sidebar.classList.contains('open')) {
-        overlay.style.display = 'block';
-      } else {
-        overlay.style.display = 'none';
-      }
-    }
+  const { data, error } = await supabase
+    .from("chats")
+    .insert([{ user_id: currentUser.id, title: "New Chat", messages: [] }])
+    .select();
 
-    function goToSettings() {
-      window.location.href = 'settings.html';
+  if (error) {
+    console.error("Error creating chat:", error);
+  } else {
+    currentChatId = data[0].id;
+    chat.innerHTML = ""; // clear messages
+    loadChats(); // refresh sidebar
+  }
+}
+
+  async function loadChats() {
+  if (!currentUser) return;
+
+  const { data, error } = await supabase
+    .from("chats")
+    .select("id, title, created_at")
+    .eq("user_id", currentUser.id)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error loading chats:", error);
+    return;
+  }
+
+  const chatList = document.getElementById("chatList");
+  chatList.innerHTML = "";
+
+  data.forEach(c => {
+    const li = document.createElement("li");
+    li.textContent = c.title;
+    li.style.cursor = "pointer";
+    li.onclick = () => loadChat(c.id);
+    chatList.appendChild(li);
+  });
+}
+
+  // ✅ Load one chat’s messages
+async function loadChat(chatId) {
+  const { data, error } = await supabase
+    .from("chats")
+    .select("messages, title")
+    .eq("id", chatId)
+    .single();
+
+  if (error) {
+    console.error("Error loading chat:", error);
+    return;
+  }
+
+  currentChatId = chatId;
+  chat.innerHTML = "";
+
+  data.messages.forEach(msg => {
+    const div = document.createElement("div");
+    div.classList.add("message", msg.role === "user" ? "user" : "ai");
+    div.innerText = msg.content;
+    chat.appendChild(div);
+  });
+
+  chat.scrollTop = chat.scrollHeight;
+}
+
+  /************ SENDING ************/
+  userInput.addEventListener("keydown", (e)=>{
+    if(e.key==="Enter" && !e.shiftKey){
+      e.preventDefault();
+      sendMessage();
     }
-  </script>
+  });
+
+  async function sendMessage() {
+  const message = userInput.value.trim();
+  if (!message) return;
+
+  // Show user message
+  const userDiv = document.createElement("div");
+  userDiv.classList.add("message", "user");
+  userDiv.innerText = message;
+  chat.appendChild(userDiv);
+
+  userInput.value = "";
+
+  // Temporary AI placeholder
+  const aiDiv = document.createElement("div");
+  aiDiv.classList.add("message", "ai");
+  aiDiv.innerText = "Thinking...";
+  chat.appendChild(aiDiv);
+
+  chat.scrollTop = chat.scrollHeight;
+
+  // Send to backend
+  const res = await fetch("https://ai-coder-backend.onrender.com/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message }),
+  });
+
+  const data = await res.json();
+  const aiReply = data.reply || "Error";
+  aiDiv.innerText = aiReply;
+
+  // --- Save to Supabase if logged in ---
+  if (currentUser && currentChatId) {
+    let { data: chatRow, error } = await supabase
+      .from("chats")
+      .select("messages")
+      .eq("id", currentChatId)
+      .single();
+
+    let messages = chatRow?.messages || [];
+    messages.push({ role: "user", content: message });
+    messages.push({ role: "ai", content: aiReply });
+
+    await supabase
+      .from("chats")
+      .update({ messages })
+      .eq("id", currentChatId);
+  }
+}
+
+  /************ INIT ************/
+  checkSession();
+</script>
 </body>
 </html>
+

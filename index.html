@@ -502,7 +502,7 @@ window.logout = async function() {
 // Toggle Incognito Mode (made global)
 window.toggleIncognito = async function() {
     if (!currentUser) {
-        await showMessage("Login Required", "Please login to use Incognito Mode.");
+        await console.log("Login Required", "Please login to use Incognito Mode.");
         return;
     }
     isIncognito = !isIncognito;

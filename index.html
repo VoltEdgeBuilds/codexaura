@@ -424,7 +424,7 @@ async function checkSession(){
     // Update userArea with avatar and buttons
     userArea.innerHTML = `
       <button class="ghost-btn" id="incognitoToggleBtn" title="Toggle Incognito Mode">
-          ${isIncognito ? '🤫 Incognito' : '👁️ Normal'} <!-- Incognito icon with text -->
+          ${isIncognito ? '👁️ Normal' : '🤫 Incognito'} <!-- Incognito icon with text -->
       </button>
       <div class="user-avatar ${isIncognito ? 'incognito' : 'default'}" title="${currentUser.email}" id="userAvatar"></div>
       ${upgraded ? "" : "<button id='upgradeBtn'>Upgrade</button>"}
